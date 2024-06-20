@@ -10,6 +10,8 @@ pip3 install -r requirements.txt
 
 ```
 
+<h3>Usage</h3>
+
 1. use a vad to isolate and cut out sentences: <b>vad-it.py <agressiveness> <video file></b> <i>agressiveness is a int, either 1, 2 or 3. experiment, I have had success with 3.</i>
 2. run wisper on the clips to transcibe them: <b>transcribe-it.py</b>
 3. Create a vector for each text sentence to compare meaning: <b>sentence-it.py</b>

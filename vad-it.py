@@ -7,9 +7,9 @@ import os
 import webrtcvad
 
 def extract_and_convert_audio(video_path, audio_path):
-    """Extracts audio from a video file and converts it to PCM 16-bit 18kHz."""
+    """Extracts audio from a video file and converts it to PCM 16-bit 16kHz."""
     command = [
-        'ffmpeg', '-i', video_path, '-ar', '18000', '-ac', '1', '-f', 'wav', audio_path
+        'ffmpeg', '-i', video_path, '-ar', '16000', '-ac', '1', '-f', 'wav', audio_path
     ]
     subprocess.run(command, check=True)
 
@@ -24,7 +24,7 @@ def read_wave(path):
         sample_width = wf.getsampwidth()
         assert sample_width == 2
         sample_rate = wf.getframerate()
-        assert sample_rate == 18000
+        assert sample_rate == 16000
         pcm_data = wf.readframes(wf.getnframes())
         return pcm_data, sample_rate
 
@@ -153,11 +153,16 @@ def vad_collector(sample_rate, frame_duration_ms,
 def main(args):
     if len(args) != 3:
         sys.stderr.write(
-            'Usage: example.py <aggressiveness> <path to video file> <path to temporary audio file>\n')
+            'Usage: example.py <aggressiveness> <path to video file>\n')
         sys.exit(1)
 
     video_path = args[1]
-    audio_path = args[2]
+    audio_path = 'tmp.wav'
+
+    # Ensure the 'media' directory exists
+    media_dir = 'media'
+    if not os.path.exists(media_dir):
+        os.makedirs(media_dir)
 
     # Extract and convert audio from the video file
     extract_and_convert_audio(video_path, audio_path)
@@ -169,7 +174,7 @@ def main(args):
     frames = list(frames)
     segments = vad_collector(sample_rate, 10, 150, vad, frames, pause_threshold_ms=500)
     for i, segment in enumerate(segments):
-        path = 'chunk-%002d.wav' % (i,)
+        path = 'media/chunk-%04d.wav' % (i,)
         print(' Writing %s' % (path,))
         write_wave(path, segment, sample_rate)
 

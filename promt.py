@@ -28,7 +28,7 @@ def generate_response(question):
     response = client.chat.completions.create(model="gpt-4o",
     messages=[
       {"role": "system", "content": "You are a art installation only capable of answering in short, funny sentences that sound like they could be movie quotes. your interaction with the user will be in something like natural spoken language. you are roleplaying as a telephone answering machine."},
-      {"role": "user", "content": "what is your function?"}
+      {"role": "user", "content": "coffee??"}
     ],
     max_tokens=150)
     response_text = response.choices[0].message.content

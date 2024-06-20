@@ -1,13 +1,13 @@
 import os
 import json
+import sounddevice as sd
+import soundfile as sf
 from openai import OpenAI
 import openai_key
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 client = OpenAI(api_key=openai_key.get_key())
-
-# Set up your OpenAI API key
 
 # Directory containing audio files
 audio_dir = "media"
@@ -25,12 +25,14 @@ except Exception as e:
 
 # Function to generate a response and find the closest matching sentence
 def generate_response(question):
-    response = client.chat.completions.create(model="gpt-4o",
-    messages=[
-      {"role": "system", "content": "You are a art installation only capable of answering in short, funny sentences that sound like they could be movie quotes. your interaction with the user will be in something like natural spoken language. you are roleplaying as a telephone answering machine."},
-      {"role": "user", "content": "coffee??"}
-    ],
-    max_tokens=150)
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are a art installation only capable of answering in short, funny sentences that sound like they could be movie quotes. your interaction with the user will be in something like natural spoken language. you are roleplaying as a telephone answering machine."},
+            {"role": "user", "content": question}
+        ],
+        max_tokens=150
+    )
     response_text = response.choices[0].message.content
     print("Response:", response_text)
 
@@ -53,21 +55,31 @@ def generate_response(question):
 
     # Return the closest match information
     if closest_match:
-        print(f"Closest match sentence: {closest_match['sentence']} Wavfile: {closest_match['wav_filename']}")
         return closest_match
     else:
-        print("No close match found.")
         return None
 
+# Function to play the audio file
+def play_audio(wav_filename):
+    file_path = os.path.join(audio_dir, wav_filename)
+    try:
+        data, fs = sf.read(file_path, dtype='float32')
+        sd.play(data, fs)
+        sd.wait()  # Wait until the file is done playing
+    except Exception as e:
+        print(f"Error playing audio file: {e}")
 
-# Example usage
-question = "answer in 10 words or less, if you could would you marry?"
-closest_match_info = generate_response(question)
+# Main loop to interact with the user
+while True:
+    question = input("Ask your question (or type 'exit' to quit): ")
+    if question.lower() == 'exit':
+        print("Goodbye!")
+        break
 
-completion = client.chat.completions.create(
-  model="gpt-3.5-turbo",
-  messages=[
-    {"role": "system", "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."},
-    {"role": "user", "content": "Compose a poem that explains the concept of recursion in programming."}
-  ]
-)
+    closest_match_info = generate_response(question)
+
+    if closest_match_info:
+        print(f"Closest match sentence: {closest_match_info['sentence']} Wavfile: {closest_match_info['wav_filename']}")
+        play_audio(closest_match_info['wav_filename'])
+    else:
+        print("No close match found.")

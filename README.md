@@ -1,4 +1,4 @@
-<h2>The idea is to extract audio from a film or tv episode and:</h2>
+<h2>The idea is to extract audio from a film or tv episodes</h2>
 
 <h3>Installation</h3>
 
